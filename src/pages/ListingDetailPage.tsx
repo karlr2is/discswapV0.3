@@ -254,6 +254,26 @@ export function ListingDetailPage({ listingId, onBack, onContactSeller, onViewPr
           </div>
         </div>
 
+        {/* ── Send Message button ── */}
+        {!isOwnListing && user && (
+          <button
+            onClick={() => onContactSeller(listing.user_id, listing.id)}
+            className="w-full mb-4 bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+          >
+            <MessageCircle className="w-5 h-5" />
+            {t('sendMessage', language)}
+          </button>
+        )}
+        {!isOwnListing && !user && (
+          <button
+            onClick={() => onContactSeller(listing.user_id, listing.id)}
+            className="w-full mb-4 bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+          >
+            <MessageCircle className="w-5 h-5" />
+            {t('signInToContact', language)}
+          </button>
+        )}
+
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-20 md:mb-6">
           <h3 className="font-semibold text-gray-900 dark:text-white mb-4">{t('sellerInformation', language)}</h3>
 

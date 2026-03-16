@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useSettings } from '../contexts/SettingsContext';
-import { t } from '../utils/translations';
+import { t, translateCategoryName } from '../utils/translations';
 import { ListingCard } from '../components/listings/ListingCard';
 import { ArrowLeft } from 'lucide-react';
 
@@ -87,7 +87,7 @@ export function CategoryListingsPage({ categoryId, categoryName, onBack, onNavig
           >
             <ArrowLeft className="w-6 h-6 dark:text-white" />
           </button>
-          <h1 className="text-lg font-semibold dark:text-white">{categoryName}</h1>
+          <h1 className="text-lg font-semibold dark:text-white">{translateCategoryName(categoryName, language)}</h1>
         </div>
       </div>
 

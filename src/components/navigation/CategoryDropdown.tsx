@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronDown } from 'lucide-react';
 import { useSettings } from '../../contexts/SettingsContext';
-import { t } from '../../utils/translations';
+import { t, translateCategoryName } from '../../utils/translations';
 
 type Category = {
   id: string;
@@ -36,7 +36,7 @@ export function CategoryDropdown({ category, subcategories, isActive, onNavigate
             : 'text-slate-300 hover:text-white hover:bg-white/10'
         }`}
       >
-        {category.name}
+        {translateCategoryName(category.name, language)}
         <motion.span
           animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.2 }}
@@ -69,7 +69,7 @@ export function CategoryDropdown({ category, subcategories, isActive, onNavigate
                 onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'rgba(47,111,237,0.12)')}
                 onMouseLeave={e => (e.currentTarget.style.backgroundColor = '')}
               >
-                {t('viewAll', language)} {category.name}
+                {t('viewAll', language)} {translateCategoryName(category.name, language)}
               </button>
 
               {subcategories.length > 0 && (
@@ -80,7 +80,7 @@ export function CategoryDropdown({ category, subcategories, isActive, onNavigate
                       onClick={() => onNavigate(subcat.id, subcat.name)}
                       className="w-full text-left px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                     >
-                      {subcat.name}
+                      {translateCategoryName(subcat.name, language)}
                     </button>
                   ))}
                 </div>

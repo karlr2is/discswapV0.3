@@ -22,7 +22,7 @@ export function Layout({
   showSearch = false,
 }: LayoutProps) {
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--ds-bg)' }}>
+    <div style={{ backgroundColor: 'var(--ds-bg)' }}>
       <Navigation
         currentPage={currentPage}
         onNavigate={onNavigate}

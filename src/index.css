@@ -4,21 +4,21 @@
 
 /* ── Design Tokens ──────────────────────────────────── */
 :root {
-  --ds-bg:      #F3F5F7;   /* page background    */
-  --ds-card:    #0F1E2D;   /* cards & nav        */
-  --ds-accent:  #2F6FED;   /* primary action     */
+  --ds-bg:      #0c1829;   /* page background — deep navy   */
+  --ds-card:    #0F1E2D;   /* cards & nav surface           */
+  --ds-accent:  #2F6FED;   /* primary action                */
   --ds-border:  rgba(255 255 255 / 0.07);
 }
 
 @layer base {
   html {
     background-color: var(--ds-bg);
-    color: #1a2535;
+    color: #e2e8f0;
   }
 
   body {
     background-color: var(--ds-bg);
-    color: #1a2535;
+    color: #e2e8f0;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }

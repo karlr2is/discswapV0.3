@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { t } from '../utils/translations';
-import { MapPin, Calendar, Star, CreditCard as Edit2, Package, ArrowLeft, Bookmark, Trash2 } from 'lucide-react';
+import { MapPin, Calendar, Star, CreditCard as Edit2, Package, ArrowLeft } from 'lucide-react';
 import { ListingCard } from '../components/listings/ListingCard';
 
 type ProfilePageProps = {
@@ -11,6 +11,7 @@ type ProfilePageProps = {
   onNavigateToListing: (id: string) => void;
   onEditProfile?: () => void;
   onBack?: () => void;
+  onNavigateToMyListings?: () => void;
 };
 
 type Profile = {
@@ -32,7 +33,7 @@ type Listing = {
   listing_type: 'for_sale' | 'wanted';
 };
 
-export function ProfilePage({ userId, onNavigateToListing, onEditProfile, onBack }: ProfilePageProps) {
+export function ProfilePage({ userId, onNavigateToListing, onEditProfile, onBack, onNavigateToMyListings }: ProfilePageProps) {
   const { user, profile: currentUserProfile } = useAuth();
   const { language } = useSettings();
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -40,7 +41,6 @@ export function ProfilePage({ userId, onNavigateToListing, onEditProfile, onBack
   const [rating, setRating] = useState<number | null>(null);
   const [ratingCount, setRatingCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [savedSearches, setSavedSearches] = useState<Array<{ id: string; name: string; filters: Record<string, string>; created_at: string }>>([]);
 
   const viewingUserId = userId || user?.id;
   const isOwnProfile = user?.id === viewingUserId;
@@ -48,26 +48,10 @@ export function ProfilePage({ userId, onNavigateToListing, onEditProfile, onBack
   useEffect(() => {
     if (viewingUserId) {
       fetchProfile();
-      fetchListings();
+      if (!isOwnProfile) fetchListings();
       fetchRatings();
-      if (isOwnProfile) fetchSavedSearches();
     }
   }, [viewingUserId]);
-
-  const fetchSavedSearches = async () => {
-    if (!user) return;
-    const { data } = await supabase
-      .from('saved_searches')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
-    if (data) setSavedSearches(data);
-  };
-
-  const handleDeleteSavedSearch = async (id: string) => {
-    await supabase.from('saved_searches').delete().eq('id', id);
-    setSavedSearches(prev => prev.filter(s => s.id !== id));
-  };
 
   const fetchProfile = async () => {
     if (!viewingUserId) return;
@@ -143,7 +127,7 @@ export function ProfilePage({ userId, onNavigateToListing, onEditProfile, onBack
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
-      {onBack && !isOwnProfile && (
+      {onBack && (
         <div className="mb-4">
           <button
             onClick={onBack}
@@ -198,61 +182,44 @@ export function ProfilePage({ userId, onNavigateToListing, onEditProfile, onBack
         )}
       </div>
 
-      <div className="mb-4 flex items-center gap-2">
-        <Package className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-          {t('listings', language)} ({listings.length})
-        </h2>
-      </div>
-
-      {listings.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-12 text-center">
-          <p className="text-gray-500 dark:text-gray-400">{t('noListings', language)}</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-          {listings.map((listing) => (
-            <ListingCard
-              key={listing.id}
-              listing={listing}
-              onClick={() => onNavigateToListing(listing.id)}
-            />
-          ))}
-        </div>
+      {/* Own profile: show Minu kuulutused button instead of listings grid */}
+      {isOwnProfile && onNavigateToMyListings && (
+        <button
+          onClick={onNavigateToMyListings}
+          className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium text-slate-200 hover:text-white transition-colors"
+          style={{ backgroundColor: 'var(--ds-card)', border: '1px solid rgba(255,255,255,0.1)' }}
+        >
+          <Package className="w-5 h-5" />
+          {t('myListings', language)}
+        </button>
       )}
 
-      {/* Saved searches — own profile only */}
-      {isOwnProfile && savedSearches.length > 0 && (
-        <div className="mt-8">
+      {/* Other user's profile: show their listings */}
+      {!isOwnProfile && (
+        <>
           <div className="mb-4 flex items-center gap-2">
-            <Bookmark className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Saved Searches</h2>
+            <Package className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+              {t('listings', language)} ({listings.length})
+            </h2>
           </div>
-          <div className="space-y-2">
-            {savedSearches.map(search => (
-              <div
-                key={search.id}
-                className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-lg px-4 py-3 shadow-sm"
-              >
-                <div>
-                  <div className="font-medium text-gray-900 dark:text-white text-sm">{search.name}</div>
-                  <div className="text-xs text-gray-400 mt-0.5">
-                    {Object.entries(search.filters)
-                      .filter(([, v]) => v)
-                      .map(([k, v]) => `${k}: ${v}`)
-                      .join(' · ')}
-                  </div>
-                </div>
-                <button
-                  onClick={() => handleDeleteSavedSearch(search.id)}
-                  className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
+
+          {listings.length === 0 ? (
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-12 text-center">
+              <p className="text-gray-500 dark:text-gray-400">{t('noListings', language)}</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+              {listings.map((listing) => (
+                <ListingCard
+                  key={listing.id}
+                  listing={listing}
+                  onClick={() => onNavigateToListing(listing.id)}
+                />
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

@@ -55,7 +55,7 @@ export function MyListingsPage({ onBack, onNavigateToListing, onNavigateToEdit }
   };
 
   const handleDelete = async (listingId: string) => {
-    if (!confirm(t('confirmDelete', language))) return;
+    if (!confirm(t('deleteListingConfirm', language))) return;
     const { error } = await supabase
       .from('listings').update({ status: 'deleted' }).eq('id', listingId);
     if (!error) fetchListings();
@@ -127,7 +127,7 @@ export function MyListingsPage({ onBack, onNavigateToListing, onNavigateToEdit }
                       style={{ backgroundColor: 'rgba(47,111,237,0.15)', color: 'var(--ds-accent)', border: '1px solid rgba(47,111,237,0.25)' }}
                     >
                       <Edit2 className="w-3 h-3" />
-                      Edit
+                      {t('editListing', language)}
                     </button>
                     {/* Mark sold */}
                     <button
@@ -136,7 +136,7 @@ export function MyListingsPage({ onBack, onNavigateToListing, onNavigateToEdit }
                       style={{ backgroundColor: 'rgba(22,163,74,0.15)', color: '#4ade80', border: '1px solid rgba(22,163,74,0.25)' }}
                     >
                       <CheckCircle className="w-3 h-3" />
-                      Sold
+                      {t('soldListings', language)}
                     </button>
                     {/* Delete */}
                     <button

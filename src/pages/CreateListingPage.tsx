@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
-import { t } from '../utils/translations';
+import { t, translateCategoryName } from '../utils/translations';
 import { ArrowLeft, Upload, X } from 'lucide-react';
 
 type CreateListingPageProps = {
@@ -19,14 +19,14 @@ type Category = {
 };
 
 const CONDITIONS = [
-  { value: 'New', label: 'New', score: 10 },
-  { value: 'Like New', label: 'Like New', score: 9 },
-  { value: 'Excellent', label: 'Excellent', score: 8 },
-  { value: 'Very Good', label: 'Very Good', score: 7 },
-  { value: 'Good', label: 'Good', score: 6 },
-  { value: 'Fair', label: 'Fair', score: 5 },
-  { value: 'Used', label: 'Used', score: 4 },
-  { value: 'Heavily Used', label: 'Heavily Used', score: 3 },
+  { value: 'New', labelKey: 'conditionNew', score: 10 },
+  { value: 'Like New', labelKey: 'conditionLikeNew', score: 9 },
+  { value: 'Excellent', labelKey: 'conditionExcellent', score: 8 },
+  { value: 'Very Good', labelKey: 'conditionVeryGood', score: 7 },
+  { value: 'Good', labelKey: 'conditionGood', score: 6 },
+  { value: 'Fair', labelKey: 'conditionFair', score: 5 },
+  { value: 'Used', labelKey: 'conditionUsed', score: 4 },
+  { value: 'Heavily Used', labelKey: 'conditionHeavilyUsed', score: 3 },
 ];
 
 export function CreateListingPage({ onBack, onSuccess, editListingId }: CreateListingPageProps) {
@@ -195,7 +195,7 @@ export function CreateListingPage({ onBack, onSuccess, editListingId }: CreateLi
             <ArrowLeft className="w-6 h-6 dark:text-white" />
           </button>
           <h1 className="text-lg font-semibold dark:text-white">
-            {editListingId ? 'Edit Listing' : t('createListing', language)}
+            {editListingId ? t('editListing', language) : t('createListing', language)}
           </h1>
         </div>
       </div>
@@ -273,7 +273,7 @@ export function CreateListingPage({ onBack, onSuccess, editListingId }: CreateLi
                 <option value="">{t('selectCategory', language)}</option>
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.id}>
-                    {cat.name}
+                    {translateCategoryName(cat.name, language)}
                   </option>
                 ))}
               </select>
@@ -292,7 +292,7 @@ export function CreateListingPage({ onBack, onSuccess, editListingId }: CreateLi
                 <option value="">{t('selectCondition', language)}</option>
                 {CONDITIONS.map((cond) => (
                   <option key={cond.value} value={cond.value}>
-                    {cond.label} ({cond.score}/10)
+                    {t(cond.labelKey, language)} ({cond.score}/10)
                   </option>
                 ))}
               </select>
@@ -373,7 +373,7 @@ export function CreateListingPage({ onBack, onSuccess, editListingId }: CreateLi
             >
               {loading || uploadingImages
                 ? t('creating', language)
-                : editListingId ? 'Save Changes' : t('createListing', language)}
+                : editListingId ? t('saveChanges', language) : t('createListing', language)}
             </button>
           </form>
         </div>

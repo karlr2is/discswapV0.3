@@ -9,6 +9,7 @@ type MessagesPageProps = {
   initialConversationId?: string;
   initialSellerId?: string;
   initialListingId?: string;
+  onBack?: () => void;
 };
 
 type Conversation = {
@@ -37,7 +38,7 @@ type Message = {
   read: boolean;
 };
 
-export function MessagesPage({ initialConversationId, initialSellerId, initialListingId }: MessagesPageProps) {
+export function MessagesPage({ initialConversationId, initialSellerId, initialListingId, onBack }: MessagesPageProps) {
   const { user } = useAuth();
   const { language } = useSettings();
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -261,7 +262,17 @@ export function MessagesPage({ initialConversationId, initialSellerId, initialLi
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('messages', language)}</h1>
+      <div className="flex items-center gap-3 mb-6">
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          >
+            <ArrowLeft className="w-6 h-6 dark:text-white" />
+          </button>
+        )}
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('messages', language)}</h1>
+      </div>
 
       {conversations.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-12 text-center">

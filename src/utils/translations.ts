@@ -10,7 +10,7 @@ type Translations = {
 const translations: Translations = {
   browse: { en: 'Browse', et: 'Sirvi' },
   categories: { en: 'Categories', et: 'Kategooriad' },
-  sell: { en: 'Sell', et: 'Müü' },
+  sell: { en: 'Add Listing', et: 'Lisa kuulutus' },
   messages: { en: 'Messages', et: 'Sõnumid' },
   profile: { en: 'Profile', et: 'Profiil' },
   favorites: { en: 'Favorites', et: 'Lemmikud' },
@@ -35,7 +35,9 @@ const translations: Translations = {
   saveFavorites: { en: 'Save listings to see them here', et: 'Salvesta kuulutusi, et need siin kuvada' },
 
   viewAll: { en: 'View all', et: 'Vaata kõiki' },
+  seeAll: { en: 'See All', et: 'Vaata kõiki' },
   recentListings: { en: 'Recent Listings', et: 'Viimased kuulutused' },
+  recentlyAdded: { en: 'Recently Added', et: 'Viimati lisatud' },
   noListingsYet: { en: 'No listings yet in this category', et: 'Selles kategoorias pole veel kuulutusi' },
   loading: { en: 'Loading...', et: 'Laadimine...' },
 
@@ -47,6 +49,9 @@ const translations: Translations = {
   browseListings: { en: 'Browse Listings', et: 'Sirvi kuulutusi' },
   searchForDiscs: { en: 'Search for discs, bags, accessories...', et: 'Otsi kettaid, kotte, aksessuaare...' },
   noListingsFound: { en: 'No listings found', et: 'Kuulutusi ei leitud' },
+
+  allListings: { en: 'All Listings', et: 'Kõik kuulutused' },
+  landingSubtitle: { en: 'Buy and sell disc golf gear in Estonia', et: 'Osta ja müü discgolfi varustust Eestis' },
 
   createListing: { en: 'Create Listing', et: 'Loo kuulutus' },
   listingType: { en: 'Listing Type', et: 'Kuulutuse tüüp' },
@@ -154,8 +159,41 @@ const translations: Translations = {
   noActiveListings: { en: 'No active listings', et: 'Pole aktiivseid kuulutusi' },
   noSoldListings: { en: 'No sold listings', et: 'Pole müüdud kuulutusi' },
   favoriteCount: { en: 'favorites', et: 'lemmikut' },
+
+  otsin: { en: 'Wanted', et: 'Otsin' },
+
+  sendMessage: { en: 'Send Message', et: 'Saada sõnum' },
+  deleteListingConfirm: { en: 'Delete listing?', et: 'Kustuta kuulutus?' },
+
+  loadingMore: { en: 'Loading more...', et: 'Laadin veel...' },
+  allListingsLoaded: { en: 'All listings loaded', et: 'Kõik kuulutused laaditud' },
+
+  conditionNew: { en: 'New', et: 'Uus' },
+  conditionLikeNew: { en: 'Like New', et: 'Nagu uus' },
+  conditionExcellent: { en: 'Excellent', et: 'Suurepärane' },
+  conditionVeryGood: { en: 'Very Good', et: 'Väga hea' },
+  conditionGood: { en: 'Good', et: 'Hea' },
+  conditionFair: { en: 'Fair', et: 'Rahuldav' },
+  conditionUsed: { en: 'Used', et: 'Kasutatud' },
+  conditionHeavilyUsed: { en: 'Heavily Used', et: 'Palju kasutatud' },
 };
 
 export function t(key: string, language: Language): string {
   return translations[key]?.[language] || key;
+}
+
+/** Map English category names from the DB to Estonian */
+const categoryNameMap: Record<string, string> = {
+  'Discs': 'Kettad',
+  'Bags & Carts': 'Kotid ja Kärud',
+  'Other Gear': 'Muu Varustus',
+  'Distance Drivers': 'Distance Driverid',
+  'Fairway Drivers': 'Fairway Driverid',
+  'Midranges': 'Midrange Kettad',
+  'Putters': 'Putterid',
+};
+
+export function translateCategoryName(name: string, language: Language): string {
+  if (language === 'et') return categoryNameMap[name] ?? name;
+  return name;
 }

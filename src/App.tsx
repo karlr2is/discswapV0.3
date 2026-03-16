@@ -4,7 +4,8 @@ import { SettingsProvider, useSettings } from './contexts/SettingsContext';
 import { AuthModal } from './components/auth/AuthModal';
 import { Layout } from './components/layout/Layout';
 import { FiltersPanel, FilterOptions } from './components/listings/FiltersPanel';
-import { HomePage } from './pages/HomePage';
+import { LandingPage } from './pages/LandingPage';
+import { AllListingsPage } from './pages/AllListingsPage';
 import { ListingDetailPage } from './pages/ListingDetailPage';
 import { CreateListingPage } from './pages/CreateListingPage';
 import { CategoriesPage } from './pages/CategoriesPage';
@@ -17,11 +18,13 @@ import { FavoritesPage } from './pages/FavoritesPage';
 import { MyListingsPage } from './pages/MyListingsPage';
 import { supabase } from './lib/supabase';
 import { ListingCard } from './components/listings/ListingCard';
-import { Search, SlidersHorizontal } from 'lucide-react';
+import { Search, SlidersHorizontal, ArrowLeft } from 'lucide-react';
 import { t } from './utils/translations';
 
 type Page =
-  | { type: 'home' }
+  | { type: 'landing' }            // new structured landing page
+  | { type: 'home' }               // full listings feed (AllListingsPage)
+  | { type: 'wanted-listings' }    // wanted/otsin listings
   | { type: 'listing'; id: string }
   | { type: 'create' }
   | { type: 'listing-edit'; id: string }
@@ -47,13 +50,13 @@ type Listing = {
   disc_speed: number | null;
 };
 
-const FEED_TYPES = new Set(['home', 'filtered-results']);
+const FEED_TYPES = new Set(['home', 'filtered-results', 'wanted-listings']);
 
 function MainApp() {
   const { user, loading } = useAuth();
   const { language } = useSettings();
-  const [currentPage, setCurrentPage] = useState<Page>({ type: 'home' });
-  const [pageHistory, setPageHistory] = useState<Page[]>([{ type: 'home' }]);
+  const [currentPage, setCurrentPage] = useState<Page>({ type: 'landing' });
+  const [pageHistory, setPageHistory] = useState<Page[]>([{ type: 'landing' }]);
   const [filters, setFilters] = useState<FilterOptions | null>(null);
   const [filteredListings, setFilteredListings] = useState<Listing[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -133,19 +136,40 @@ function MainApp() {
 
   const handleNavigateBasic = (pageType: string) => {
     if (pageType === 'home') {
-      setCurrentPage({ type: 'home' });
+      // 'home' nav button goes to the landing page and resets history
       setFilters(null);
-    } else if (pageType === 'categories')  { setCurrentPage({ type: 'categories' }); }
-    else if (pageType === 'create')        { if (!user) { setShowAuthModal(true); return; } setCurrentPage({ type: 'create' }); }
-    else if (pageType === 'messages')      { if (!user) { setShowAuthModal(true); return; } setCurrentPage({ type: 'messages' }); }
-    else if (pageType === 'profile')       { if (!user) { setShowAuthModal(true); return; } setCurrentPage({ type: 'profile' }); }
-    else if (pageType === 'settings')      { if (!user) { setShowAuthModal(true); return; } setCurrentPage({ type: 'settings' }); }
-    else if (pageType === 'favorites')     { if (!user) { setShowAuthModal(true); return; } setCurrentPage({ type: 'favorites' }); }
-    else if (pageType === 'my-listings')   { if (!user) { setShowAuthModal(true); return; } setCurrentPage({ type: 'my-listings' }); }
-    else if (pageType === 'search')        { setShowFiltersPanel(true); }
-    else if (pageType.startsWith('category-')) {
+      setPageHistory([{ type: 'landing' }]);
+      setCurrentPage({ type: 'landing' });
+      window.scrollTo(0, 0);
+    } else if (pageType === 'listings') {
+      navigate({ type: 'home' });
+    } else if (pageType === 'categories') {
+      navigate({ type: 'categories' });
+    } else if (pageType === 'create') {
+      if (!user) { setShowAuthModal(true); return; }
+      navigate({ type: 'create' });
+    } else if (pageType === 'messages') {
+      if (!user) { setShowAuthModal(true); return; }
+      navigate({ type: 'messages' });
+    } else if (pageType === 'profile') {
+      if (!user) { setShowAuthModal(true); return; }
+      navigate({ type: 'profile' });
+    } else if (pageType === 'settings') {
+      if (!user) { setShowAuthModal(true); return; }
+      navigate({ type: 'settings' });
+    } else if (pageType === 'favorites') {
+      if (!user) { setShowAuthModal(true); return; }
+      navigate({ type: 'favorites' });
+    } else if (pageType === 'my-listings') {
+      if (!user) { setShowAuthModal(true); return; }
+      navigate({ type: 'my-listings' });
+    } else if (pageType === 'search') {
+      setShowFiltersPanel(true);
+    } else if (pageType === 'wanted-listings') {
+      navigate({ type: 'wanted-listings' });
+    } else if (pageType.startsWith('category-')) {
       const categoryId = pageType.replace('category-', '');
-      setCurrentPage({ type: 'category-listings', categoryId, categoryName: '' });
+      navigate({ type: 'category-listings', categoryId, categoryName: '' });
     }
   };
 
@@ -168,7 +192,9 @@ function MainApp() {
 
   const getPageType = (page: Page): string => {
     switch (page.type) {
+      case 'landing': return 'home';          // nav highlights Home on landing
       case 'home':
+      case 'wanted-listings':
       case 'filtered-results': return 'home';
       case 'categories':
       case 'category-listings': return 'categories';
@@ -182,7 +208,8 @@ function MainApp() {
     }
   };
 
-  const feedActive = isFeedPage(currentPage);
+  const feedActive = currentPage.type === 'home';
+  const isLanding  = currentPage.type === 'landing';
 
   return (
     <>
@@ -204,13 +231,25 @@ function MainApp() {
         onNavigateToFilters={() => setShowFiltersPanel(true)}
         showSearch={feedActive}
       >
+        {/* ── Landing page ── */}
+        {isLanding && (
+          <LandingPage
+            onNavigateToListing={(id) => navigate({ type: 'listing', id })}
+            onNavigateToAllListings={() => navigate({ type: 'home' })}
+            onNavigateToCategoryListings={(categoryId, categoryName) =>
+              navigate({ type: 'category-listings', categoryId, categoryName })
+            }
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            onNavigateToFilters={() => setShowFiltersPanel(true)}
+          />
+        )}
+
         {/* ── Feed (always mounted so scroll + listings are preserved) ── */}
         <div
           id="home-feed"
           aria-hidden={!feedActive}
           style={feedActive ? {} : {
-            // Collapse visually but stay in layout so document height
-            // and window.scrollY stay intact until navigate() captures them
             position: 'absolute',
             top: 0,
             left: 0,
@@ -220,7 +259,7 @@ function MainApp() {
             zIndex: -1,
           }}
         >
-          <HomePage
+          <AllListingsPage
             onNavigateToListing={(id) => navigate({ type: 'listing', id })}
             onNavigateToFilters={() => setShowFiltersPanel(true)}
             searchQuery={searchQuery}
@@ -228,6 +267,23 @@ function MainApp() {
         </div>
 
         {/* ── Other pages (conditionally rendered) ── */}
+
+        {currentPage.type === 'wanted-listings' && (
+          <div className="max-w-7xl mx-auto">
+            <div className="sticky top-0 z-10 px-4 py-3 flex items-center gap-3" style={{ backgroundColor: 'var(--ds-bg)' }}>
+              <button onClick={goBack} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
+                <ArrowLeft className="w-6 h-6 text-white" />
+              </button>
+              <h1 className="text-lg font-semibold text-white">{t('otsin', language)}</h1>
+            </div>
+            <AllListingsPage
+              onNavigateToListing={(id) => navigate({ type: 'listing', id })}
+              onNavigateToFilters={() => setShowFiltersPanel(true)}
+              searchQuery={searchQuery}
+              filterListingType="wanted"
+            />
+          </div>
+        )}
 
         {currentPage.type === 'filtered-results' && !feedActive && (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -317,7 +373,8 @@ function MainApp() {
             userId={currentPage.userId}
             onNavigateToListing={(id) => navigate({ type: 'listing', id })}
             onEditProfile={() => navigate({ type: 'edit-profile' })}
-            onBack={currentPage.userId ? goBack : undefined}
+            onBack={goBack}
+            onNavigateToMyListings={() => navigate({ type: 'my-listings' })}
           />
         )}
 
@@ -330,6 +387,7 @@ function MainApp() {
             initialConversationId={currentPage.conversationId}
             initialSellerId={currentPage.sellerId}
             initialListingId={currentPage.listingId}
+            onBack={goBack}
           />
         )}
 

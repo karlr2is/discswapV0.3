@@ -119,6 +119,13 @@ export function Navigation({
                   onNavigate={handleCategoryNavigate}
                 />
               ))}
+              {/* Otsin (Wanted) nav item */}
+              <button
+                onClick={() => onNavigate('wanted-listings')}
+                className="flex items-center gap-1 px-4 py-2 text-sm font-medium rounded-lg transition-colors text-slate-300 hover:text-white hover:bg-white/10"
+              >
+                {t('otsin', language)}
+              </button>
             </nav>
 
             {/* Desktop actions */}

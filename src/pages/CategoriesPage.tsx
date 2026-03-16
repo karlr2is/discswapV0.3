@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { ChevronDown, X } from 'lucide-react';
 import { useSettings } from '../contexts/SettingsContext';
-import { t } from '../utils/translations';
+import { t, translateCategoryName } from '../utils/translations';
 
 type CategoriesPageProps = {
   onSelectCategory: (categoryId: string, categoryName: string) => void;
@@ -87,7 +87,7 @@ export function CategoriesPage({ onSelectCategory, onClose }: CategoriesPageProp
                       {parentCategory.name.charAt(0)}
                     </div>
                     <div className="text-left">
-                      <div className="font-semibold text-gray-900 dark:text-white">{parentCategory.name}</div>
+                      <div className="font-semibold text-gray-900 dark:text-white">{translateCategoryName(parentCategory.name, language)}</div>
                     </div>
                   </div>
                   <ChevronDown
@@ -105,7 +105,7 @@ export function CategoriesPage({ onSelectCategory, onClose }: CategoriesPageProp
                     >
                       <div className="text-left">
                         <div className="font-medium text-blue-600 dark:text-blue-400">
-                          {t('viewAll', language)} {parentCategory.name}
+                          {t('viewAll', language)} {translateCategoryName(parentCategory.name, language)}
                         </div>
                       </div>
                     </button>
@@ -117,7 +117,7 @@ export function CategoriesPage({ onSelectCategory, onClose }: CategoriesPageProp
                         className="w-full px-6 py-3 flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors border-b border-gray-200 dark:border-gray-700 last:border-b-0"
                       >
                         <div className="text-left pl-4">
-                          <div className="font-medium text-gray-900 dark:text-white">{subcat.name}</div>
+                          <div className="font-medium text-gray-900 dark:text-white">{translateCategoryName(subcat.name, language)}</div>
                         </div>
                       </button>
                     ))}
