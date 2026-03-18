@@ -4,6 +4,7 @@
 DO $$
 DECLARE
   demo_user_id uuid;
+  existing_listings_count int;
 
   -- Disc category IDs
   cat_distance_drivers uuid;
@@ -19,6 +20,14 @@ DECLARE
   cat_accessories       uuid;
 
 BEGIN
+  -- Check if listings already exist - if so, skip this migration
+  SELECT COUNT(*) INTO existing_listings_count FROM listings;
+
+  IF existing_listings_count > 0 THEN
+    RAISE NOTICE 'Listings already exist (%), skipping demo data insertion', existing_listings_count;
+    RETURN;
+  END IF;
+
   -- Get demo user ID
   SELECT id INTO demo_user_id FROM auth.users WHERE email = 'demo@discswap.com' LIMIT 1;
 
