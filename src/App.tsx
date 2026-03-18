@@ -23,7 +23,7 @@ import { t } from './utils/translations';
 
 type Page =
   | { type: 'landing' }            // new structured landing page
-  | { type: 'home' }               // full listings feed (AllListingsPage)
+  | { type: 'home'; searchQuery?: string }               // full listings feed (AllListingsPage)
   | { type: 'wanted-listings' }    // wanted/otsin listings
   | { type: 'listing'; id: string }
   | { type: 'create' }
@@ -91,19 +91,41 @@ function MainApp() {
     setPageHistory(prev => [...prev, page]);
     setCurrentPage(page);
     window.scrollTo(0, 0);
+
+    // Push state to browser history
+    window.history.pushState({ page }, '', window.location.pathname);
   };
 
   const goBack = () => {
-    const newHistory = pageHistory.length > 1
-      ? [...pageHistory].slice(0, -1)
-      : [{ type: 'home' } as Page];
-    const target = newHistory[newHistory.length - 1];
-    if (isFeedPage(target)) {
-      pendingRestore.current = true;
-    }
-    setPageHistory(newHistory);
-    setCurrentPage(target);
+    window.history.back();
   };
+
+  // Handle browser back/forward buttons
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      if (event.state?.page) {
+        const target = event.state.page as Page;
+        if (isFeedPage(target)) {
+          pendingRestore.current = true;
+        }
+        setPageHistory(prev => prev.slice(0, -1));
+        setCurrentPage(target);
+      } else {
+        // If no state, go to landing
+        setPageHistory([{ type: 'landing' }]);
+        setCurrentPage({ type: 'landing' });
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    // Set initial state
+    window.history.replaceState({ page: currentPage }, '', window.location.pathname);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
 
   const handleNavigateBasicWithReset = (pageType: string) => {
     if (pageType !== 'home') setSearchQuery('');
@@ -141,6 +163,7 @@ function MainApp() {
       setPageHistory([{ type: 'landing' }]);
       setCurrentPage({ type: 'landing' });
       window.scrollTo(0, 0);
+      window.history.pushState({ page: { type: 'landing' } }, '', window.location.pathname);
     } else if (pageType === 'listings') {
       navigate({ type: 'home' });
     } else if (pageType === 'categories') {
@@ -170,6 +193,12 @@ function MainApp() {
     } else if (pageType.startsWith('category-')) {
       const categoryId = pageType.replace('category-', '');
       navigate({ type: 'category-listings', categoryId, categoryName: '' });
+    }
+  };
+
+  const handleSearchSubmit = (query: string) => {
+    if (query.trim()) {
+      navigate({ type: 'home', searchQuery: query });
     }
   };
 
@@ -210,6 +239,7 @@ function MainApp() {
 
   const feedActive = currentPage.type === 'home';
   const isLanding  = currentPage.type === 'landing';
+  const currentSearchQuery = currentPage.type === 'home' && currentPage.searchQuery ? currentPage.searchQuery : searchQuery;
 
   return (
     <>
@@ -226,10 +256,11 @@ function MainApp() {
         currentPage={getPageType(currentPage)}
         onNavigate={handleNavigateBasicWithReset}
         onShowAuth={() => setShowAuthModal(true)}
-        searchQuery={searchQuery}
+        searchQuery={currentSearchQuery}
         onSearchChange={setSearchQuery}
         onNavigateToFilters={() => setShowFiltersPanel(true)}
-        showSearch={feedActive}
+        onSearchSubmit={handleSearchSubmit}
+        showSearch={feedActive || isLanding}
       >
         {/* ── Landing page ── */}
         {isLanding && (
@@ -239,7 +270,7 @@ function MainApp() {
             onNavigateToCategoryListings={(categoryId, categoryName) =>
               navigate({ type: 'category-listings', categoryId, categoryName })
             }
-            searchQuery={searchQuery}
+            searchQuery={currentSearchQuery}
             onSearchChange={setSearchQuery}
             onNavigateToFilters={() => setShowFiltersPanel(true)}
           />
@@ -262,7 +293,7 @@ function MainApp() {
           <AllListingsPage
             onNavigateToListing={(id) => navigate({ type: 'listing', id })}
             onNavigateToFilters={() => setShowFiltersPanel(true)}
-            searchQuery={searchQuery}
+            searchQuery={currentSearchQuery}
           />
         </div>
 

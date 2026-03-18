@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, useScroll, useMotionValueEvent } from 'motion/react';
-import { Home, Plus, Search, LogIn, Menu, SlidersHorizontal } from 'lucide-react';
+import { Home, Plus, Search, LogIn, Menu, SlidersHorizontal, Grid3x3 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSettings } from '../../contexts/SettingsContext';
 import { supabase } from '../../lib/supabase';
@@ -15,6 +15,7 @@ type NavigationProps = {
   searchQuery?: string;
   onSearchChange?: (q: string) => void;
   onNavigateToFilters?: () => void;
+  onSearchSubmit?: (query: string) => void;
   showSearch?: boolean;
 };
 
@@ -36,6 +37,7 @@ export function Navigation({
   searchQuery = '',
   onSearchChange,
   onNavigateToFilters,
+  onSearchSubmit,
   showSearch = false,
 }: NavigationProps) {
   const { user } = useAuth();
@@ -45,6 +47,13 @@ export function Navigation({
   const [hidden, setHidden] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { scrollY } = useScroll();
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim() && onSearchSubmit) {
+      onSearchSubmit(searchQuery);
+    }
+  };
 
   useMotionValueEvent(scrollY, 'change', (current) => {
     const previous = scrollY.getPrevious() ?? 0;
@@ -82,6 +91,7 @@ export function Navigation({
 
   const mobileNavItems = [
     { id: 'home', label: t('browse', language), icon: Home },
+    { id: 'categories', label: t('categories', language), icon: Grid3x3 },
     ...(user ? [{ id: 'create', label: t('sell', language), icon: Plus }] : []),
     ...(user ? [{ id: 'menu', label: t('menu', language), icon: Menu }] : []),
   ];
@@ -156,18 +166,12 @@ export function Navigation({
 
             {/* Mobile header buttons */}
             <div className="md:hidden flex items-center gap-2">
-              <button
-                onClick={() => onNavigate('categories')}
-                className="p-2 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-              >
-                <Search className="w-6 h-6" />
-              </button>
               {!user && (
                 <button
                   onClick={onShowAuth}
                   className="p-2 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                 >
-                  <Menu className="w-6 h-6" />
+                  <LogIn className="w-6 h-6" />
                 </button>
               )}
             </div>
@@ -178,7 +182,7 @@ export function Navigation({
         {showSearch && (
           <div className="border-t border-white/10">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-              <div className="flex gap-2">
+              <form onSubmit={handleSearchSubmit} className="flex gap-2">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                   <input
@@ -197,6 +201,7 @@ export function Navigation({
                 </div>
                 <button
                   onClick={onNavigateToFilters}
+                  type="button"
                   className="px-3 py-2.5 rounded-lg hover:bg-white/10 transition-colors"
                   style={{
                     backgroundColor: 'rgba(255,255,255,0.07)',
@@ -205,7 +210,7 @@ export function Navigation({
                 >
                   <SlidersHorizontal className="w-5 h-5 text-slate-300" />
                 </button>
-              </div>
+              </form>
             </div>
           </div>
         )}

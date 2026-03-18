@@ -8,6 +8,7 @@ type LayoutProps = {
   searchQuery?: string;
   onSearchChange?: (q: string) => void;
   onNavigateToFilters?: () => void;
+  onSearchSubmit?: (query: string) => void;
   showSearch?: boolean;
 };
 
@@ -19,6 +20,7 @@ export function Layout({
   searchQuery = '',
   onSearchChange,
   onNavigateToFilters,
+  onSearchSubmit,
   showSearch = false,
 }: LayoutProps) {
   return (
@@ -30,6 +32,7 @@ export function Layout({
         searchQuery={searchQuery}
         onSearchChange={onSearchChange}
         onNavigateToFilters={onNavigateToFilters}
+        onSearchSubmit={onSearchSubmit}
         showSearch={showSearch}
       />
       <main className="pb-20 md:pb-8">

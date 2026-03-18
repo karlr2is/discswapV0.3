@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import { ListingCard } from '../components/listings/ListingCard';
 import { useSettings } from '../contexts/SettingsContext';
 import { t, translateCategoryName } from '../utils/translations';
-import { LayoutList, Search, SlidersHorizontal } from 'lucide-react';
+import { LayoutList } from 'lucide-react';
 
 type Listing = {
   id: string;
@@ -199,39 +199,9 @@ export function LandingPage({
 
   return (
     <div>
-      {/* ── Centered search bar + actions ─────────────── */}
+      {/* ── Centered "All Listings" button ─────────────── */}
       <div className="px-4 sm:px-6 lg:px-8 pt-6 pb-6">
-        <div className="max-w-xl mx-auto flex gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-            <input
-              type="text"
-              placeholder={t('searchForDiscs', language)}
-              value={searchQuery}
-              onChange={(e) => onSearchChange?.(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm text-white placeholder-slate-400 focus:outline-none"
-              style={{
-                backgroundColor: 'rgba(255,255,255,0.07)',
-                border: '1px solid rgba(255,255,255,0.12)',
-              }}
-              onFocus={e => (e.currentTarget.style.border = '1px solid var(--ds-accent)')}
-              onBlur={e => (e.currentTarget.style.border = '1px solid rgba(255,255,255,0.12)')}
-            />
-          </div>
-          <button
-            onClick={onNavigateToFilters}
-            className="px-3 py-2.5 rounded-xl hover:bg-white/10 transition-colors"
-            style={{
-              backgroundColor: 'rgba(255,255,255,0.07)',
-              border: '1px solid rgba(255,255,255,0.12)',
-            }}
-          >
-            <SlidersHorizontal className="w-5 h-5 text-slate-300" />
-          </button>
-        </div>
-
-        {/* Centered "All Listings" button */}
-        <div className="flex justify-center mt-4">
+        <div className="flex justify-center">
           <button
             onClick={onNavigateToAllListings}
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-slate-200 border border-slate-600 hover:border-slate-400 hover:text-white transition-all text-sm"

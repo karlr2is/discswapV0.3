@@ -36,21 +36,15 @@ export function CreateListingPage({ onBack, onSuccess, editListingId }: CreateLi
   const [loading, setLoading] = useState(false);
   const [listingType, setListingType] = useState<'for_sale' | 'wanted'>('for_sale');
 
-  const [formData, setFormData] = useState(() => {
-    if (editListingId) {
-      return { title: '', description: '', price: '', category_id: '', condition: '', condition_score: '', location: '', images: [] as string[] };
-    }
-    const saved = localStorage.getItem('createListingFormData');
-    return saved ? JSON.parse(saved) : {
-      title: '',
-      description: '',
-      price: '',
-      category_id: '',
-      condition: '',
-      condition_score: '',
-      location: '',
-      images: [] as string[],
-    };
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    price: '',
+    category_id: '',
+    condition: '',
+    condition_score: '',
+    location: '',
+    images: [] as string[],
   });
 
   const [uploadingImages, setUploadingImages] = useState(false);
@@ -58,12 +52,24 @@ export function CreateListingPage({ onBack, onSuccess, editListingId }: CreateLi
 
   useEffect(() => {
     fetchCategories();
-    if (editListingId) fetchExistingListing();
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('createListingFormData', JSON.stringify(formData));
-  }, [formData]);
+    if (editListingId) {
+      fetchExistingListing();
+    } else {
+      // Reset form when opening create listing
+      setFormData({
+        title: '',
+        description: '',
+        price: '',
+        category_id: '',
+        condition: '',
+        condition_score: '',
+        location: '',
+        images: [],
+      });
+      setImageFiles([]);
+      setListingType('for_sale');
+    }
+  }, [editListingId]);
 
   const fetchCategories = async () => {
     const { data } = await supabase
@@ -177,9 +183,19 @@ export function CreateListingPage({ onBack, onSuccess, editListingId }: CreateLi
     setLoading(false);
 
     if (!error) {
-      if (!editListingId) localStorage.removeItem('createListingFormData');
-      setFormData({ title: '', description: '', price: '', category_id: '', condition: '', condition_score: '', location: '', images: [] as string[] });
+      // Reset form after successful submission
+      setFormData({
+        title: '',
+        description: '',
+        price: '',
+        category_id: '',
+        condition: '',
+        condition_score: '',
+        location: '',
+        images: [],
+      });
       setImageFiles([]);
+      setListingType('for_sale');
       onSuccess();
     }
   };

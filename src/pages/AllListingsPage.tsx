@@ -48,7 +48,7 @@ export function AllListingsPage({
     setPage(0);
     setHasMore(true);
     fetchListings(0, true);
-  }, [filterCategoryId, filterListingType]);
+  }, [filterCategoryId, filterListingType, searchQuery]);
 
   const fetchListings = useCallback(
     async (pageNum: number, reset = false) => {
@@ -77,6 +77,11 @@ export function AllListingsPage({
         query = query.eq('listing_type', 'for_sale');
       }
 
+      // Apply search filter
+      if (searchQuery.trim()) {
+        query = query.or(`title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
+      }
+
       const { data, error } = await query;
 
       if (!error && data) {
@@ -87,7 +92,7 @@ export function AllListingsPage({
       if (reset) setLoading(false);
       else setLoadingMore(false);
     },
-    [filterCategoryId, filterListingType]
+    [filterCategoryId, filterListingType, searchQuery]
   );
 
   useEffect(() => {
@@ -105,10 +110,6 @@ export function AllListingsPage({
     if (sentinelRef.current) observerRef.current.observe(sentinelRef.current);
     return () => observerRef.current?.disconnect();
   }, [hasMore, loadingMore, loading, page, fetchListings]);
-
-  const filteredListings = listings.filter(l =>
-    l.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -128,14 +129,14 @@ export function AllListingsPage({
             </div>
           ))}
         </div>
-      ) : filteredListings.length === 0 ? (
+      ) : listings.length === 0 ? (
         <div className="text-center py-16">
           <p className="text-gray-500">{t('noListingsFound', language)}</p>
         </div>
       ) : (
         <>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-            {filteredListings.map(listing => (
+            {listings.map(listing => (
               <ListingCard
                 key={listing.id}
                 listing={listing}
