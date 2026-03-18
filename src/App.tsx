@@ -239,7 +239,15 @@ function MainApp() {
 
   const feedActive = currentPage.type === 'home';
   const isLanding  = currentPage.type === 'landing';
-  const currentSearchQuery = currentPage.type === 'home' && currentPage.searchQuery ? currentPage.searchQuery : searchQuery;
+
+  // Use search query from page state when navigating to home with search, otherwise use local state
+  useEffect(() => {
+    if (currentPage.type === 'home' && currentPage.searchQuery) {
+      setSearchQuery(currentPage.searchQuery);
+    }
+  }, [currentPage]);
+
+  const currentSearchQuery = searchQuery;
 
   return (
     <>
